@@ -1,7 +1,5 @@
-# Wallpapers 🖼️
+# 🖼️ Wallpapers 
 
-🎨 Bộ sưu tập ảnh Desktop 🖥️ ✨
-
-📸 Hình nền chất lượng cao • 🌟 Đa dạng phong cách 
+🎨 Bộ sưu tập ảnh Desktop  
 
 🔗 Tự do clone & tải xuống • 💕 Enjoy!
