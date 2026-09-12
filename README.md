@@ -1,5 +1,7 @@
-# 🖼️ Wallpapers 
+# Wallpapers 
 
 🎨 Bộ sưu tập ảnh Desktop  
 
-🔗 Tự do clone & tải xuống • 💕 Enjoy!
+🔗 Tự do clone & tải xuống 
+
+💕 Enjoy!
