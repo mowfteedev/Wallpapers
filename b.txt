@@ -1,0 +1,178 @@
+ĐÁP ÁN ÔN TẬP: QUẢN TRỊ MÔI TRƯỜNG HỖN HỢP WINDOWS & LINUX
+CHỦ ĐỀ: ACTIVE DIRECTORY DOMAIN SERVICES (AD DS) & SAMBA DOMAIN CONTROLLER · 120 PHÚT
+(Bản rút gọn trọng tâm, chuẩn barem điểm thi viết tay)
+
+================================================================================
+PHẦN I. CÂU HỎI LÝ THUYẾT (40 ĐIỂM)
+================================================================================
+
+Câu 1. Tổng quan Active Directory Domain Services (AD DS) (8đ)
+a) [3đ]
+- AD DS là gì: Dịch vụ thư mục (Directory Service) cung cấp cơ chế lưu trữ tập trung, xác thực danh tính và quản lý tài nguyên mạng (user, máy tính, chính sách) trong toàn miền.
+- Ý nghĩa lưu trữ phân cấp: Cấu trúc hình cây phản ánh logic tổ chức doanh nghiệp (Domain -> OU -> User/Group), giúp dễ dàng tìm kiếm, phân quyền quản trị (delegation) và áp dụng chính sách nhóm (GPO) kế thừa từ trên xuống.
+b) [3đ] 3 loại đối tượng quản lý:
+1. User (Người dùng): Định danh và xác thực cá nhân khi đăng nhập. Ví dụ: tài khoản gv1, sv1.
+2. Computer (Máy tính): Định danh và xác thực thiết bị máy trạm/server tham gia miền. Ví dụ: PC-MMT01, DC01.
+3. Group (Nhóm): Tập hợp người dùng/máy tính để thuận tiện phân quyền và quản lý. Ví dụ: nhóm Giangvien, Sinhvien.
+c) [2đ] Phân biệt Authentication và Authorization:
+- Xác thực (Authentication): Kiểm tra danh tính — "Bạn là ai?" (ví dụ: kiểm tra username/password hoặc vé Kerberos khi đăng nhập).
+- Phân quyền (Authorization): Xác định quyền hạn truy cập — "Bạn được phép làm gì?" (ví dụ: kiểm tra quyền Read/Write trên thư mục chia sẻ sau khi đã đăng nhập).
+
+Câu 2. Cấu trúc logic của miền AD DS (8đ)
+a) [3đ] Phân biệt Forest, Domain, OU:
+- Forest (Rừng): Cấp phân cấp cao nhất, định nghĩa ranh giới bảo mật (security boundary); tập hợp một hoặc nhiều Domain dùng chung Schema và Global Catalog.
+- Domain (Miền): Ranh giới quản trị (administrative boundary); tập hợp các đối tượng chia sẻ chung cơ sở dữ liệu thư mục và chính sách bảo mật.
+- OU (Organizational Unit): Vùng chứa nhỏ nhất trong một Domain; dùng để gom nhóm đối tượng nhằm ủy quyền quản trị và áp dụng chính sách nhóm (GPO).
+b) [3đ] Sơ đồ Forest, Domain và 2 OU:
+    [Forest: lab.example.test]
+             │
+        [Domain: lab.example.test]
+             ├── [OU: Giangvien] ──> Chứa tài khoản: gv1
+             └── [OU: Sinhvien]  ──> Chứa tài khoản: sv1
+c) [2đ] Schema và Global Catalog:
+- Schema: Định nghĩa cấu trúc dữ liệu toàn rừng, gồm danh mục các lớp đối tượng (Classes: User, Computer) và thuộc tính của chúng (Attributes: mail, displayName).
+- Global Catalog (GC): Kho lưu trữ phân tán chứa bản sao một phần thuộc tính của mọi đối tượng trong toàn bộ Forest, giúp tìm kiếm tài nguyên nhanh chóng và hỗ trợ xác thực đăng nhập.
+
+Câu 3. Đối tượng và nhóm trong miền (8đ)
+a) [3đ] Vai trò của User, Group, Computer:
+- User: Cung cấp thông tin định danh cá nhân để đăng nhập và kiểm soát quyền truy cập.
+- Group: Tối ưu hóa phân quyền; gán quyền cho nhóm thay vì phải gán lẻ tẻ cho từng tài khoản.
+- Computer: Quản lý thiết bị phần cứng trong miền; cho phép quản trị viên áp dụng cấu hình và GPO từ xa lên máy tính.
+b) [3đ] Security Group vs Distribution Group:
+- Security Group: Dùng để phân quyền truy cập tài nguyên (gán quyền trên thư mục chia sẻ, máy in) và gửi mail. Ví dụ: Nhóm Giangvien được gán quyền Full Control trên thư mục TaiLieu.
+- Distribution Group: Chỉ dùng làm danh sách gửi email hàng loạt (với Exchange/Mail server), KHÔNG thể dùng để gán quyền bảo mật. Ví dụ: Nhóm Sinhvien2026@lab.example.test để gửi thông báo.
+c) [2đ] Global Group vs Domain-Local Group:
+- Global Group: Chỉ chứa thành viên thuộc cùng domain; thường dùng để gom nhóm người dùng theo vai trò/chức năng (ví dụ: G_Giangvien).
+- Domain-Local Group: Chứa thành viên từ bất kỳ domain nào trong rừng; thường dùng để gán quyền trực tiếp lên tài nguyên tại domain đó (ví dụ: DL_TaiLieu_Read).
+
+Câu 4. Máy chủ điều khiển miền (Domain Controller) (8đ)
+a) [3đ] 3 nhiệm vụ chính của DC:
+1. Lưu trữ và quản lý cơ sở dữ liệu thư mục AD (file ntds.dit hoặc Samba LDB).
+2. Xác thực người dùng và máy tính khi đăng nhập miền (dịch vụ Kerberos KDC, NTLM).
+3. Sao chép dữ liệu (Replication) đồng bộ giữa các DC và phân phối chính sách nhóm (GPO).
+b) [3đ] Writable DC vs RODC & Tình huống:
+- So sánh: Writable DC cho phép cả đọc và ghi dữ liệu AD; RODC (Read-Only DC) chỉ cho phép đọc, không ghi trực tiếp và mặc định không lưu mật khẩu tài khoản.
+- Tình huống áp dụng: Đặt tại văn phòng chi nhánh xa nơi thiếu an ninh vật lý hoặc không có nhân viên IT quản trị an toàn.
+c) [2đ] Vì sao triển khai ít nhất 2 DC & Vai trò sao chép:
+- Vì sao ít nhất 2 DC: Đảm bảo tính sẵn sàng cao (High Availability) và cân bằng tải; tránh điểm lỗi duy nhất (Single Point of Failure) nếu 1 DC gặp sự cố.
+- Vai trò sao chép (Replication): Đảm bảo tính nhất quán dữ liệu (data consistency); mọi thay đổi trên một DC sẽ được đồng bộ tự động sang DC còn lại.
+
+Câu 5. Samba AD/DC và quá trình đăng nhập miền (8đ)
+a) [3đ] Dịch vụ Samba AD/DC cung cấp:
+- Dịch vụ thư mục chuẩn tương thích Microsoft AD DS (LDAP, DNS nội bộ, Kerberos KDC).
+- Dịch vụ xác thực tập trung (Single Sign-On) cho cả máy trạm Windows và Linux.
+- Dịch vụ chia sẻ tệp/máy in (SMB/CIFS) tích hợp phân quyền ACL bảo mật và hỗ trợ GPO.
+b) [3đ] Quá trình đăng nhập miền bằng Kerberos:
+1. Client gửi yêu cầu xác thực (AS-REQ) chứa thông tin mã hóa lên KDC trên DC.
+2. KDC xác thực và trả về vé TGT (Ticket Granting Ticket) cùng khóa phiên cho Client (AS-REP).
+3. Khi cần truy cập dịch vụ, Client xuất trình TGT gửi yêu cầu vé dịch vụ lên TGS (TGS-REQ).
+4. TGS cấp vé dịch vụ (Service Ticket - ST) cho Client (TGS-REP).
+5. Client xuất trình vé ST cho máy chủ tài nguyên để được cấp quyền truy cập (AP-REQ).
+c) [2đ] Phân biệt:
+- Tham gia miền (Join domain): Thiết lập kênh tin cậy bảo mật giữa HĐH máy trạm với DC, tạo tài khoản máy tính (Computer Account) trong AD.
+- Đăng nhập tài khoản miền: Người dùng sử dụng tài khoản User thuộc AD để đăng nhập vào một máy đã tham gia miền để làm việc.
+
+================================================================================
+PHẦN II. CÂU HỎI TÌNH HUỐNG THỰC TẾ (60 ĐIỂM)
+================================================================================
+
+Câu 6. Thiết kế quản trị phòng máy của trường học (15đ)
+a) [5đ] Sơ đồ logic OU và tài khoản:
+[Domain: lab.example.test] (DC: DC01 - Ubuntu Samba AD/DC)
+├── [OU: Giangvien]
+│    ├── Users: gv1, gv2
+│    └── Group: G_Giangvien
+├── [OU: Sinhvien]
+│    ├── Users: sv1, sv2, sv3, sv4
+│    └── Group: G_Sinhvien
+└── [OU: PhongMay]
+     ├── [OU: MMT]  (Chứa tài khoản máy trạm phòng MMT: Win/Ubuntu)
+     └── [OU: TTDL] (Chứa tài khoản máy trạm phòng TTDL: Win/Ubuntu)
+* Giải thích: Tách biệt OU người dùng theo vai trò để áp dụng chính sách tài khoản; phân tách OU máy trạm theo phòng học để quản lý phần cứng và áp dụng GPO theo vị trí.
+b) [4đ] Đề xuất Security Group & Cấp quyền:
+- 2 nhóm: "G_Giangvien" (gv1, gv2) và "G_Sinhvien" (sv1-sv4).
+- Cấp quyền:
+  + Thư mục "\\server\TaiLieu": Cấp quyền "Read" cho G_Sinhvien; cấp "Modify/Full Control" cho G_Giangvien (đăng tải bài giảng).
+  + Thư mục "\\server\NopBai": Cấp quyền "Write" cho G_Sinhvien (chỉ nộp bài); cấp "Full Control" cho G_Giangvien.
+c) [3đ] Đề xuất GPO cho sinh viên Windows:
+- GPO: Vô hiệu hóa Control Panel và Command Prompt (hoặc khóa cổng USB, chặn đổi hình nền).
+- OU liên kết: Liên kết vào "OU Sinhvien".
+- Lý do: Ngăn chặn sinh viên tự ý thay đổi cấu hình hệ thống, phá hoại phần mềm hoặc mang mã độc vào phòng máy.
+d) [3đ] 3 bước chuẩn bị trước khi join domain:
+1. Cấu hình IP và trỏ Primary DNS về đúng địa chỉ IP của DC (`192.0.2.10`).
+2. Đồng bộ thời gian hệ thống (NTP) với DC (độ lệch phải < 5 phút để Kerberos hoạt động).
+3. Đặt tên máy (Hostname) duy nhất (ví dụ: MMT-PC01) và kiểm tra kết nối (`ping lab.example.test`).
+
+Câu 7. Thiết lập chính sách tài khoản theo yêu cầu quản trị (15đ)
+a) [6đ] Bảng thiết lập thuộc tính tài khoản:
+| Tài khoản | Thao tác / Thuộc tính tương ứng trong AD |
+| :--- | :--- |
+| sv1 | Bật cờ: "User must change password at next logon" (pwdLastSet = 0). |
+| sv2 | Bật 2 cờ: "User cannot change password" và "Password never expires". |
+| sv3 | Cấu hình thuộc tính: "Logon Hours" (cho phép T2-T7 trong khung 07:00-11:00 & 13:00-17:00). |
+| sv4 | Bật thuộc tính: "Account is disabled" (Vô hiệu hóa tài khoản). |
+| sv5 | Cấu hình thuộc tính: "Account expires" (Đặt mốc thời gian hết hạn là ngày mai). |
+| sv6 | Cấu hình thuộc tính: "Logon Workstations" (Chỉ định duy nhất tên máy: CLIENT1). |
+b) [4đ] Phân biệt & Lựa chọn cho sv4:
+- Phân biệt:
+  + Vô hiệu hóa (Account disabled): Khóa tài khoản ngay lập tức vô thời hạn bằng cờ bảo mật; mở lại thủ công khi cần.
+  + Hết hạn tài khoản (Account expiration): Hẹn ngày giờ cụ thể trong tương lai tài khoản tự động bị khóa.
+  + Giới hạn giờ (Logon hours): Giới hạn khung thời gian đăng nhập trong tuần; ngoài giờ đó không vào được nhưng không bị khóa.
+- Lựa chọn cho sv4: Dùng "Account is disabled" là phù hợp nhất, vì nhu cầu chặn đột xuất trong hôm nay, ngày mai bật lại (Enable) dễ dàng.
+c) [3đ] Kiểm tra thực tế 3 quy tắc:
+1. Kiểm tra sv1: Đăng nhập bằng sv1 -> Hệ thống bắt buộc đổi mật khẩu mới trước khi vào màn hình desktop.
+2. Kiểm tra sv4: Đăng nhập bằng sv4 -> Bị từ chối với thông báo tài khoản đã bị vô hiệu hóa.
+3. Kiểm tra sv6: Đăng nhập sv6 trên máy khác (CLIENT2) -> Bị từ chối; đăng nhập trên CLIENT1 -> Thành công.
+d) [2đ] Vì sao cấu hình tại miền thuận tiện hơn làm thủ công:
+- Quản trị tập trung 1 nơi duy nhất, tự động đồng bộ tới toàn bộ máy trạm trong miền; tiết kiệm thời gian, tránh sai sót và ngăn chặn việc lách luật đổi máy.
+
+Câu 8. Chẩn đoán lỗi tham gia miền và đăng nhập (15đ)
+(DC01: 192.0.2.10, lab.example.test)
+a) [5đ] Nguyên nhân:
+- Windows W01: Trỏ sai DNS (đang dùng DNS công cộng 8.8.8.8). AD DS bắt buộc phải dùng DNS nội bộ của DC để tìm các bản ghi SRV (`_ldap._tcp.dc._msdcs.lab.example.test`). DNS 8.8.8.8 không biết bản ghi này nên không tìm thấy DC.
+- Ubuntu L01: Lệch thời gian quá mức (12 phút > 5 phút). Kerberos quy định độ lệch tối đa (MaxClockSkew) là 5 phút để chống tấn công phát lại (Replay Attacks); lệch 12 phút khiến KDC từ chối cấp vé xác thực.
+b) [5đ] Quy trình 4 bước chẩn đoán & khắc phục:
+- Bước 1: Sửa DNS trên W01 -> Đổi Primary DNS về IP của DC (`192.0.2.10`).
+- Bước 2: Đồng bộ giờ trên L01 -> Dùng chrony/systemd-timesyncd đồng bộ giờ về DC (`192.0.2.10`).
+- Bước 3: Kiểm tra phân giải và độ lệch giờ -> Trên W01 chạy `nslookup lab.example.test`; trên L01 chạy `timedatectl` xác nhận giờ lệch < 5 phút.
+- Bước 4: Thực hiện lại thao tác -> Join domain lại trên W01; xin vé Kerberos `kinit <user>@LAB.EXAMPLE.TEST` trên L01.
+c) [3đ] 2 điều kiện mạng/dịch vụ quan trọng:
+1. Kết nối mạng thông suốt và không bị Firewall chặn các cổng thiết yếu của AD (DNS: 53, Kerberos: 88, LDAP: 389, SMB: 445).
+2. Dịch vụ DNS nội bộ phân giải chính xác tên miền và bản ghi dịch vụ SRV của DC.
+d) [2đ] 2 phép thử xác nhận:
+- Xác nhận máy đã join: Trên Windows mở CMD chạy `systeminfo | findstr /i "domain"` (hiển thị `Domain: lab.example.test`).
+- Xác nhận tài khoản đăng nhập: Đăng nhập tại màn hình Logon bằng `lab.example.test\sv1` kèm mật khẩu -> Vào desktop thành công.
+
+Câu 9. Quản lý tài khoản và nhóm với samba-tool (15đ)
+a) [7đ] Thứ tự thao tác / Lệnh samba-tool:
+1. Tạo 5 tài khoản:
+   samba-tool user create gv1 Password123!
+   samba-tool user create gv2 Password123!
+   samba-tool user create sv1 Password123!
+   samba-tool user create sv2 Password123!
+   samba-tool user create sv3 Password123!
+2. Tạo 3 nhóm:
+   samba-tool group add Giangvien
+   samba-tool group add Giangvien2
+   samba-tool group add Sinhvien
+3. Thêm thành viên vào nhóm:
+   samba-tool group addmembers Giangvien gv1,gv2
+   samba-tool group addmembers Giangvien2 gv2
+   samba-tool group addmembers Sinhvien sv1,sv2
+4. Xóa tài khoản sv3:
+   samba-tool user delete sv3
+5. Xóa nhóm Giangvien2:
+   samba-tool group delete Giangvien2
+b) [3đ] Bảng trạng thái cuối cùng:
+| Danh mục | Chi tiết trạng thái |
+| :--- | :--- |
+| Tài khoản còn tồn tại | gv1, gv2, sv1, sv2 (sv3 đã bị xóa). |
+| Nhóm Giangvien | Thành viên: gv1, gv2. |
+| Nhóm Sinhvien | Thành viên: sv1, sv2. |
+| Nhóm Giangvien2 | Đã bị xóa hoàn toàn khỏi cơ sở dữ liệu. |
+c) [3đ] Phân biệt & Vì sao xóa nhóm không mất tài khoản:
+- Nhóm chỉ là đối tượng lưu danh sách liên kết thành viên (memberships). Tài khoản người dùng (User) là đối tượng độc lập có SID và thông tin đăng nhập riêng.
+- Khi xóa nhóm Giangvien2, hệ thống chỉ hủy đối tượng nhóm và các liên kết thành viên của nhóm đó; bản thân tài khoản gv2 vẫn tồn tại độc lập trong AD và hoạt động bình thường.
+d) [2đ] 2 thao tác kiểm tra kết quả:
+1. Kiểm tra thành viên nhóm: `samba-tool group listmembers Giangvien` (ra gv1, gv2) và `samba-tool group listmembers Sinhvien` (ra sv1, sv2).
+2. Kiểm tra tài khoản/nhóm đã xóa: `samba-tool user list | grep sv3` (không có) và `samba-tool group list | grep Giangvien2` (không có).
